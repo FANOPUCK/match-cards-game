@@ -69,32 +69,54 @@ def point(x, i):  # Συναρτηση που υπολογιζει τους πο
 def pick(p, i):  # Συναρτηση που παιρνει ως εισοδο τις θεσεις που δινει ο χρηστης
     if p:
         print(f'{list_players[i]} παιζει!')
-        for z in range(2):
-            pos = int(input(f'Δωσε θεση{z + 1}: ')) - 1
-            picks[z] = pos
-        while (picks[0] < 0 or picks[0] > x) or (picks[1] < 0 or picks[1] > y) or (
-                state[picks[0]][picks[1]] == 'open'):
-            for z in range(2):
-                pos = int(input(f'Δωσε θεση{z + 1}: ')) - 1
-                picks[z] = pos
-        state[picks[0]][picks[1]] = 'open'
-        for z in range(2, 4):
-            pos = int(input(f'Δωσε θεση{z + 1}: ')) - 1
-            picks[z] = pos
-        while (picks[2] < 0 or picks[2] > x) or (picks[3] < 0 or picks[3] > y) or (
-                state[picks[2]][picks[3]] == 'open'):
-            for z in range(2, 4):
-                pos = int(input(f'Δωσε θεση{z + 1}: ')) - 1
-                picks[z] = pos
-        state[picks[2]][picks[3]] = 'open'
+        for i in range(1,3):
+            if i==1:
+                X=0
+                Y=1
+            else:
+                X=2
+                Y=3
+            pos = input(f'Δωσε καρτα{i}: ').strip().split(' ', 1)
+            pos[1] = pos[1].strip().replace(' ', '')
+            while not pos[0].isdigit() or not pos[1].isdigit():
+                pos = input(f'Δωσε καρτα{i}: ').strip().split(' ', 1)
+                pos[1] = pos[1].strip().replace(' ', '')
+            k=0
+            for t in range(X,Y+1):
+                picks[t] = int(pos[k])-1
+                k+=1
+            while (picks[X] < 0 or picks[X] > x) or (picks[Y] < 0 or picks[Y] > y) or (
+                    state[picks[X]][picks[Y]] == 'open'):
+                pos = input(f'Δωσε καρτα{i}: ').strip().split(' ', 1)
+                pos[1] = pos[1].strip().replace(' ', '')
+                while not pos[0].isdigit() or not pos[1].isdigit():
+                    pos = input(f'Δωσε καρτα{i}: ').strip().split(' ', 1)
+                    pos[1] = pos[1].strip().replace(' ', '')
+                k = 0
+                for t in range(X, Y + 1):
+                    picks[t] = int(pos[k]) - 1
+                    k += 1
+            state[picks[X]][picks[Y]] = 'open'
     else:
-        for z in range(4, 6):
-            pos = int(input(f'Δωσε θεση{z + 1}: ')) - 1
-            picks[z] = pos
+        pos = input(f'Δωσε καρτα{3}: ').strip().split(' ', 1)
+        pos[1] = pos[1].strip().replace(' ', '')
+        while not pos[0].isdigit() or not pos[1].isdigit():
+            pos = input(f'καρτα{3}: ').strip().split(' ', 1)
+            pos[1] = pos[1].strip().replace(' ', '')
+        k = 0
+        for t in range(4,6):
+            picks[t] = int(pos[k]) - 1
+            k += 1
         while (picks[4] < 0 or picks[4] > x) or (picks[5] < 0 or picks[5] > y) or state[picks[4]][picks[5]] == 'open':
-            for z in range(4, 6):
-                pos = int(input(f'Δωσε θεση{z + 1}: ')) - 1
-                picks[z] = pos
+            pos = input(f'Δωσε καρτα{3}: ').strip().split(' ', 1)
+            pos[1] = pos[1].strip().replace(' ', '')
+            while not pos[0].isdigit() or not pos[1].isdigit():
+                pos = input(f'καρτα{3}: ').strip().split(' ', 1)
+                pos[1] = pos[1].strip().replace(' ', '')
+            k = 0
+            for t in range(4,6):
+                picks[t] = int(pos[k]) - 1
+                k += 1
 
 
 def match(i, sum, flag=0):  # Συναρτηση που ελεγχει αν οι καρτες ταιριαζουν μεταξυ τους
@@ -125,18 +147,21 @@ def match(i, sum, flag=0):  # Συναρτηση που ελεγχει αν οι
             state[picks[4]][picks[5]] = 'open'
             point(deck[picks[0]][picks[1]][1], i)
             hidden[picks[2]][picks[3]] = ('*', '')
+            state[picks[2]][picks[3]] = 'closed'
             if sum == N:
                 return flag, sum
         elif deck[picks[2]][picks[3]][1] == deck[picks[4]][picks[5]][1]:
             sum += 1
             state[picks[4]][picks[5]] = 'open'
             point(deck[picks[2]][picks[3]][1], i)
-            hidden[picks[0]][picks[1]] = '*'
+            hidden[picks[0]][picks[1]] = ('*', '')
+            state[picks[0]][picks[1]] = 'closed'
             if sum == N:
                 return flag, sum
         else:
             hidden[picks[0]][picks[1]], hidden[picks[2]][picks[3]], hidden[picks[4]][picks[5]] = ('*', ''), ('*', ''), (
                 '*', '')
+            state[picks[0]][picks[1]], state[picks[2]][picks[3]], state[picks[4]][picks[5]] = 'closed', 'closed', 'closed'
     else:
         hidden[picks[0]][picks[1]], hidden[picks[2]][picks[3]] = ('*', ''), ('*', '')
         state[picks[0]][picks[1]], state[picks[2]][picks[3]] = 'closed', 'closed'
@@ -147,12 +172,24 @@ print('Καλωσήλθατε στο Matching Game!\n')
 
 list_players = []
 while True:
-    pl = int(input('Δωσε αριθμο παιχτων: '))
+    pl = input('Δωσε αριθμο παιχτων: ').strip()
+    while not pl.isdigit():
+        pl = input('Δωσε αριθμο παιχτων: ').strip()
+    pl = int(pl)
     while pl < 2:
-        pl = int(input('Δωσε αριθμο παιχτων: '))
-    level = int(input('Δωσε επιπεδο: '))
+        pl = input('Δωσε αριθμο παιχτων: ').strip()
+        while not pl.isdigit():
+            pl = input('Δωσε αριθμο παιχτων: ').strip()
+        pl = int(pl)
+    level = input('Δωσε επιπεδο: ').strip()
+    while not level.isdigit():
+        level = input('Δωσε επιπεδο: ').strip()
+    level = int(level)
     while level < 1 or level > 3:
-        level = int(input('Δωσε επιπεδο: '))
+        level = input('Δωσε επιπεδο: ').strip()
+        while not level.isdigit():
+            level = input('Δωσε επιπεδο: ').strip()
+        level = int(level)
     if level == 1:
         x = 3
         y = 3
@@ -166,8 +203,8 @@ while True:
         y = 12
         N = 26
     for i in range(pl):
-        player = input(f'Δωσε ονομα για τον παιχτη{(i + 1)}: ')
-        list_players.append(player.capitalize())
+        player = input(f'Δωσε ονομα για τον παιχτη{(i + 1)}: ').strip().capitalize()
+        list_players.append(player)
     print()
     break
 kind = {'♥', '♦', '♣', '♠'}
